@@ -1,0 +1,32 @@
+<!Doctype>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Post</title>
+</head>
+<body>
+<h1>My Blog Application</h1>
+<form th:action="@{/process-post}" th:object="${post}" method="post">
+    <label>Title:</label>
+    <input type="text" th:field="*{title}" required/><br/>
+
+    <label>Excerpt:</label>
+    <textarea th:field="*{excerpt}" rows="3" required></textarea><br/>
+
+    <label>Content:</label>
+    <textarea th:field="*{content}" rows="6" required></textarea><br/>
+    <label>Tags (separate by #):</label>
+    <input type="text" th:field="*{tagsAsString}" placeholder="tag1#tag2#tag3" />
+
+
+    <label>Author:</label>
+    <input type="text" th:field="*{author}" required/><br/>
+
+    <label>
+        <input type="checkbox" th:field="*{isPublished}" /> Published
+    </label><br/>
+
+    <button type="submit">Save</button>
+
+</form>
+</body>
+</html>
