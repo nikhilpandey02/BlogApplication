@@ -6,7 +6,14 @@ import com.example.blogapplication.model.Tag;
 import com.example.blogapplication.repositories.PostRepository;
 import com.example.blogapplication.repositories.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import com.example.blogapplication.specification.PostSpecification;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
 import java.util.*;
 
@@ -48,18 +55,47 @@ public class PostService {
 
     }
 
-    public List<Post> searchPosts(String search, String filter, String sort) {
-         List<Post> posts;
-        if(search!=null)
-        {
-            search=search.trim();
-           posts= postRepository.findAllByTitleOrAuthorOrTagsOrContent(search);
+    public List<Post> searchPosts(String search, String author,String tag,String publishedDate, String sort) {
+//         List<Post> posts;
+//        if(search!=null)
+//        {
+//            search=search.trim();
+//           posts= postRepository.findAllByTitleOrAuthorOrTagsOrContent(search);
+//        }
+//        else
+//        {
+//            posts=postRepository.findAll();
+//        }
+//        return posts;
+        Specification<Post> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+
+        if (search != null && !search.isBlank()) {
+            spec = spec.and(com.example.blogapplication.specification.PostSpecification.hasSearchTerm(search.trim()));
         }
-        else
-        {
-            posts=postRepository.findAll();
+        if (author != null && !author.isBlank()) {
+            spec = spec.and(com.example.blogapplication.specification.PostSpecification.hasAuthor(author));
         }
-        return posts;
+        if (tag != null && !tag.isBlank()) {
+            spec = spec.and(com.example.blogapplication.specification.PostSpecification.hasTag(tag));
+        }
+        if (publishedDate != null && !publishedDate.isBlank()) {
+            try {
+                LocalDate date = LocalDate.parse(publishedDate);
+                spec = spec.and(PostSpecification.hasPublishedDate(date));
+            } catch (DateTimeParseException e) {
+                // Handle invalid date format if needed
+                spec = spec.and(PostSpecification.hasPublishedDate(null));
+            }
+        }
+
+        Sort sorting = Sort.by("publishedDate");
+        if ("asc".equalsIgnoreCase(sort)) {
+            sorting = sorting.ascending();
+        } else {
+            sorting = sorting.descending();
+        }
+
+        return postRepository.findAll(spec, sorting);
 
     }
 

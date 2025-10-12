@@ -37,11 +37,22 @@
     <input type="submit" value="Search" />
 </form>
 <form method="get" th:action="@{/search}" style="text-align: right">
-    <select name="filterBy">
-        <option value="author">Author</option>
-        <option value="date">Published Date</option>
-        <option value="tag">Tag</option>
+    <select name="author">
+        <option value="">Select Author</option>
+        <option th:each="author : ${authors}" th:value="${author}" th:text="${author}"></option>
     </select>
+    <select name="publishedDate">
+        <option value="">Select Published Date</option>
+        <option th:each="date : ${dates}" th:value="${date}" th:text="${date}"></option>
+    </select>
+
+    <select name="tag">
+        <option value="">Select Tag</option>
+        <option th:each="tag : ${tags}" th:value="${tag}" th:text="${tag}"></option>
+        </option>
+    </select>
+
+
     <select name="sortBy">
         <option value="desc">Newest First</option>
         <option value="asc">Oldest First</option>

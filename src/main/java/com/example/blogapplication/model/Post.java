@@ -10,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -33,12 +34,12 @@ public class Post extends BaseModel {
 
     @Column(name = "published_at")
     @CreationTimestamp
-    private LocalDateTime publishedDate;
+    private LocalDate publishedDate;
 
     @Column(name = "is_published")
     private Boolean isPublished;
 
-    @ManyToMany()
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<Tag> tags;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)

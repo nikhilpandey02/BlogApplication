@@ -3,8 +3,10 @@ package com.example.blogapplication.controller;
 
 import com.example.blogapplication.model.Comment;
 import com.example.blogapplication.model.Post;
+import com.example.blogapplication.model.Tag;
 import com.example.blogapplication.service.CommentService;
 import com.example.blogapplication.service.PostService;
+import com.example.blogapplication.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,7 +14,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 //@RequestMapping("/blogapplication")
@@ -23,6 +30,9 @@ public class DashBoardController {
 
     @Autowired
     CommentService commentService;
+
+    @Autowired
+    TagService tagService;
 
     @GetMapping("/create-post")
     public String showDashboard(Model model)
@@ -42,18 +52,37 @@ public class DashBoardController {
     @GetMapping("/homepage")
     public String getPost(Model model)
     {
-        List<Post> listOfPost=postService.getAllPost();
+        List<Post> listOfPost = postService.getAllPost();
+        List<String> authors = new ArrayList<>();
+        List<LocalDate> dates = new ArrayList<>();
+        List<String> listOfTags = tagService.getAllTags();
+
+        for (var post : listOfPost) {
+            if (!authors.contains(post.getAuthor())) {
+                authors.add(post.getAuthor());
+            }
+            if(post.getPublishedDate()!=null)
+            {
+                dates.add(post.getPublishedDate());
+            }
+
+        }
+        model.addAttribute("authors", authors);
+        model.addAttribute("dates", dates);
         model.addAttribute("posts",listOfPost);
+        model.addAttribute("tags",listOfTags);
         return "homepage";
 
     }
 
     @GetMapping("/search")
     public String search(@RequestParam(value = "search",required = false)String search,
-                       @RequestParam(value = "filterBy",required = false)String filter,
-                       @RequestParam(value = "sortBy",required = false)String sort,
+                       @RequestParam(value = "author",required = false)String author,
+                        @RequestParam(value = "tag",required = false)String tag,
+                       @RequestParam(value = "publishedDate",required = false)String publishedDate,
+                       @RequestParam(defaultValue = "desc",value = "sortBy",required = false)String sort,
                        Model model) {
-        List<Post> listOfPost=postService.searchPosts(search,filter,sort);
+        List<Post> listOfPost=postService.searchPosts(search,author,tag,publishedDate,sort);
         model.addAttribute("posts",listOfPost);
         return "homepage";
 
@@ -111,26 +140,46 @@ public class DashBoardController {
 
     @PostMapping("/edit-comment/{commentId}")
     public String editComment(@PathVariable Integer commentId,
-                              Model model, @RequestParam Integer postId) {
+                              @RequestParam Integer postId, Model model) {
         Comment comment= commentService.getCommentById(commentId);
         model.addAttribute("comment", comment);
-        model.addAttribute("postId", postId);
+        model.addAttribute("postiding", postId);
         model.addAttribute("commentId", commentId);
         return "editComment";
 
+    }
+
+    @PostMapping("/process-edit-comment")
+    public String processEditComment(@RequestParam Integer id,
+                                     @RequestParam String comment,
+                                     @RequestParam Integer postId,Model model) {
+      commentService.saveComment(id, comment);
+        return "redirect:/view-post/" + postId;
     }
     @PostMapping("/delete-comment/{commentId}")
     public String deleteComment(@PathVariable Integer commentId, @RequestParam Integer postId) {
         commentService.deleteComment(commentId);
         return "redirect:/view-post/" + postId;
     }
+    private void addDropdownDataToModel(List<Post> posts, Model model) {
+        List<String> authors = new ArrayList<>();
+        List<LocalDate> dates = new ArrayList<>();
 
-    @PostMapping("/process-edit-comment")
-    public String processEditComment(@RequestParam Integer commentId,
-                                     @RequestParam String content,
-                                     @RequestParam Integer postId) {
-      commentService.saveComment(commentId, content);
-        return "redirect:/view-post/" + postId;
+        for (var post : posts) {
+            if (!authors.contains(post.getAuthor())) {
+                authors.add(post.getAuthor());
+            }
+            if (post.getPublishedDate() != null && !dates.contains(post.getPublishedDate())) {
+                dates.add(post.getPublishedDate());
+            }
+        }
+
+        List<String> listOfTags = tagService.getAllTags();
+
+        model.addAttribute("authors", authors);
+        model.addAttribute("dates", dates);
+        model.addAttribute("tags", listOfTags);
     }
+
 
 }
