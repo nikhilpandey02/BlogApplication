@@ -26,6 +26,7 @@ public class CommentService {
     }
 
     public Comment getCommentById(Integer commentId) {
+
         return commentRepository.findById(commentId).orElse(null);
     }
 }

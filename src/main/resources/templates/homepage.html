@@ -1,42 +1,22 @@
-<!Doctype>
-<html xmlns:th:="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Home Page</title>
-    <style>
-        *{
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }
-
-        .post-box {
-            border: 1px solid black;
-            border-radius: 8px;
-            padding: 15px;
-            background-color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            aspect-ratio: 1 / 1;
-            text-align: justify-all;
-        }
-
-
-    </style>
+    <link rel="stylesheet" th:href="@{/css/homepagestyle.css}" />
 </head>
 <body>
 <h1>Welcome to the Home Page</h1>
-<form style="text-align: right" th:action="@{/search}" method="get">
-    <input type="text" placeholder="Search..." name="search" />
-    <input type="submit" value="Search" />
-</form>
-<form method="get" th:action="@{/search}" style="text-align: right">
+
+<!-- Search bar at top, right-aligned -->
+<div class="search-row">
+    <form class="search-form" th:action="@{/search}" method="get">
+        <input type="text" placeholder="Search..." name="search"/>
+        <input type="submit" value="Search"/>
+    </form>
+</div>
+
+<!-- Filters in a separate bar below -->
+<form class="filters-form" th:action="@{/search}" method="get">
     <select name="author">
         <option value="">Select Author</option>
         <option th:each="author : ${authors}" th:value="${author}" th:text="${author}"></option>
@@ -45,14 +25,10 @@
         <option value="">Select Published Date</option>
         <option th:each="date : ${dates}" th:value="${date}" th:text="${date}"></option>
     </select>
-
     <select name="tag">
         <option value="">Select Tag</option>
         <option th:each="tag : ${tags}" th:value="${tag}" th:text="${tag}"></option>
-        </option>
     </select>
-
-
     <select name="sortBy">
         <option value="desc">Newest First</option>
         <option value="asc">Oldest First</option>
@@ -60,21 +36,22 @@
     <input type="submit" value="Apply" />
 </form>
 
+<!-- Post cards -->
 <div th:if="${posts}" class="container">
-    <div th:each="post:${posts}" class="post-box" >
-
-        <h2 th:text="${post.title}" style="text-align: center"> </h2>
-        <h2 th:text="${post.excerpt}" style="text-align: left"></h2>
-        <h4 th:text="${post.content}"></h4>
-        <a th:href="@{'/view-post/'+${post.postId}}">Read More</a>
-        <div>
-            <span th:each="tag : ${post.tags}" th:text="${tag.name}"
-                  style="margin-right: 8px;"></span>
+    <div th:each="post : ${posts}" class="post-box">
+        <div class="post-title" th:text="${post.title}"></div>
+        <div class="post-meta-row">
+            <span th:text="${post.author}"></span><span th:text="', ' + ${post.publishedDate}"></span>
         </div>
-
-        <h5 th:text="${post.createdAt}"></h5>
+        <div class="post-excerpt" th:text="${post.excerpt}"></div>
+        <div class="post-content" th:text="${post.content}"></div>
+        <div class="tags">
+            <span th:each="tag : ${post.tags}" class="tag" th:text="${tag.name}"></span>
+        </div>
+        <div class="read-more-row">
+            <a th:href="@{'/view-post/' + ${post.postId}}" class="read-more-link">Read More</a>
+        </div>
     </div>
-
 </div>
 </body>
 </html>

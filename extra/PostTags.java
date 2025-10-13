@@ -1,4 +1,4 @@
-package com.example.blogapplication.model;
+package com.example.blogapplication.extra;
 
 import jakarta.persistence.Entity;
 import lombok.Data;

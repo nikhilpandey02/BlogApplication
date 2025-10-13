@@ -1,26 +1,77 @@
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--    <title>Update Post</title>-->
+<!--</head>-->
+<!--<body>-->
+<!--<h1>Update Post</h1>-->
+<!--<form th:action="@{/process-update}" th:object= "${post}" method="post">-->
+<!--    <input type="hidden" th:field="*{postId}" />-->
+<!--    <label for="title">Title:</label>-->
+<!--    <input type="text" id="title" th:field="*{title}" /><br><br>-->
+
+<!--    <label for="excerpt">Excerpt:</label>-->
+<!--    <input type="text" id="excerpt" th:field="*{excerpt}" /><br><br>-->
+
+<!--    <label for="content">Content:</label>-->
+<!--    <textarea id="content" th:field="${post.content}"></textarea><br><br>-->
+
+<!--    <label for="author">Author:</label>-->
+<!--    <input type="text" id="author" th:field="*{author}" /><br><br>-->
+<!--    <label for="tags">Tags (separate by #):</label>-->
+<!--    <input type="text" id="tags" th:field="*{tagsAsString}" placeholder="tag1#tag2#tag3" /><br><br>-->
+<!--    <button type="submit">Update Post</button>-->
+<!--</form>-->
+<!--</body>-->
+<!--</html>-->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8" />
     <title>Update Post</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
 </head>
 <body>
-<h1>Update Post</h1>
-<form th:action="@{/process-update}" th:object= "${post}" method="post">
-    <input type="hidden" th:field="*{postId}" />
-    <label for="title">Title:</label>
-    <input type="text" id="title" th:field="*{title}" /><br><br>
+<header>
+    <h1>Update Post</h1>
+</header>
 
-    <label for="excerpt">Excerpt:</label>
-    <input type="text" id="excerpt" th:field="*{excerpt}" /><br><br>
+<main class="form-container">
+    <form th:action="@{/process-update}" th:object="${post}" method="post" class="post-form">
 
-    <label for="content">Content:</label>
-    <textarea id="content" th:field="${post.content}"></textarea><br><br>
+        <input type="hidden" th:field="*{postId}" />
 
-    <label for="author">Author:</label>
-    <input type="text" id="author" th:field="*{author}" /><br><br>
-    <label for="tags">Tags (separate by #):</label>
-    <input type="text" id="tags" th:field="*{tagsAsString}" placeholder="tag1#tag2#tag3" /><br><br>
-    <button type="submit">Update Post</button>
-</form>
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <input type="text" id="title" th:field="*{title}" required />
+        </div>
+
+        <div class="form-group">
+            <label for="excerpt">Excerpt:</label>
+            <input type="text" id="excerpt" th:field="*{excerpt}" required />
+        </div>
+
+        <div class="form-group">
+            <label for="content">Content:</label>
+            <textarea id="content" rows="6" th:field="*{content}" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="author">Author:</label>
+            <input type="text" id="author" th:field="*{author}" required />
+        </div>
+
+        <div class="form-group">
+            <label for="tagsAsString">Tags (separate by #):</label>
+            <input type="text" id="tagsAsString" th:field="*{tagsAsString}" placeholder="tag1#tag2#tag3" />
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn-submit">Update Post</button>
+        </div>
+
+    </form>
+</main>
+
 </body>
 </html>

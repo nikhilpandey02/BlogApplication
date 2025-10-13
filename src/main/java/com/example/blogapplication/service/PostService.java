@@ -1,5 +1,4 @@
 package com.example.blogapplication.service;
-
 import com.example.blogapplication.model.Comment;
 import com.example.blogapplication.model.Post;
 import com.example.blogapplication.model.Tag;
@@ -9,9 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import com.example.blogapplication.specification.PostSpecification;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
@@ -56,46 +52,70 @@ public class PostService {
     }
 
     public List<Post> searchPosts(String search, String author,String tag,String publishedDate, String sort) {
-//         List<Post> posts;
-//        if(search!=null)
-//        {
-//            search=search.trim();
-//           posts= postRepository.findAllByTitleOrAuthorOrTagsOrContent(search);
-//        }
+         List<Post> posts;
+        if(search!=null)
+        {
+            search=search.trim();
+           return postRepository.findAllByTitleOrAuthorOrTagsOrContent(search);
+        }
 //        else
 //        {
 //            posts=postRepository.findAll();
 //        }
 //        return posts;
-        Specification<Post> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+        else {
+            Specification<Post> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
 
-        if (search != null && !search.isBlank()) {
-            spec = spec.and(com.example.blogapplication.specification.PostSpecification.hasSearchTerm(search.trim()));
-        }
-        if (author != null && !author.isBlank()) {
-            spec = spec.and(com.example.blogapplication.specification.PostSpecification.hasAuthor(author));
-        }
-        if (tag != null && !tag.isBlank()) {
-            spec = spec.and(com.example.blogapplication.specification.PostSpecification.hasTag(tag));
-        }
-        if (publishedDate != null && !publishedDate.isBlank()) {
-            try {
-                LocalDate date = LocalDate.parse(publishedDate);
-                spec = spec.and(PostSpecification.hasPublishedDate(date));
-            } catch (DateTimeParseException e) {
-                // Handle invalid date format if needed
-                spec = spec.and(PostSpecification.hasPublishedDate(null));
+//            if (search != null && !search.isBlank()) {
+//                spec = spec.and(PostSpecification.hasSearchTerm(search.trim()));
+//            }
+            if (author != null && !author.isBlank()) {
+                spec = spec.and(PostSpecification.hasAuthor(author));
             }
-        }
+            if (tag != null && !tag.isBlank()) {
+                spec = spec.and(PostSpecification.hasTag(tag));
+            }
+            if (publishedDate != null && !publishedDate.isBlank()) {
+                try {
+                    LocalDate date = LocalDate.parse(publishedDate);
+                    spec = spec.and(PostSpecification.hasPublishedDate(date));
+                } catch (DateTimeParseException e) {
+                    spec = spec.and(PostSpecification.hasPublishedDate(null));
+                }
+            }
 
-        Sort sorting = Sort.by("publishedDate");
-        if ("asc".equalsIgnoreCase(sort)) {
-            sorting = sorting.ascending();
-        } else {
-            sorting = sorting.descending();
-        }
+            Sort sorting = Sort.by("publishedDate");
+            if ("asc".equalsIgnoreCase(sort)) {
+                sorting = sorting.ascending();
+            } else {
+                sorting = sorting.descending();
+            }
 
-        return postRepository.findAll(spec, sorting);
+
+            return postRepository.findAll(spec, sorting);
+    }
+//        LocalDate date = null;
+//        if (publishedDate != null && !publishedDate.isBlank()) {
+//            try {
+//                date = LocalDate.parse(publishedDate);
+//            } catch (DateTimeParseException e) {
+//                // handle invalid date format or set date to null
+//            }
+//        }
+//
+//        if (search != null) {
+//            search = search.trim();
+//        }
+//
+//        // Pass null for any empty parameters to disable filters
+//        return postRepository.searchPostsNative(
+//                (search == null || search.isEmpty()) ? null : search,
+//                (author == null || author.isEmpty()) ? null : author,
+//                (tag == null || tag.isEmpty()) ? null : tag,
+//                date,
+//                (sort == null || (!sort.equalsIgnoreCase("asc") && !sort.equalsIgnoreCase("desc"))) ? "desc" : sort.toLowerCase()
+//        );
+
 
     }
 

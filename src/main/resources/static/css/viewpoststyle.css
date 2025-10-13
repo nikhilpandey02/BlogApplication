@@ -1,0 +1,158 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: white;
+    padding: 20px;
+    color: black;
+}
+
+.container {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid black;
+}
+
+.top-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+button, input[type="submit"] {
+    cursor: pointer;
+    border: 1px solid black;
+    background: white;
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+button:hover, input[type="submit"]:hover {
+    background: black;
+    color: white;
+}
+
+.post-title {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.post-excerpt {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    font-style: italic;
+}
+
+.post-content {
+    font-size: 1rem;
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.author {
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.tags {
+    margin-bottom: 20px;
+}
+
+.tag {
+    display: inline-block;
+    border: 1px solid black;
+    padding: 5px 12px;
+    border-radius: 15px;
+    margin-right: 8px;
+    font-size: 0.85rem;
+}
+
+.comments {
+    margin-top: 30px;
+}
+
+.comments input[type="text"],
+.comments textarea {
+    padding: 8px;
+    width: 70%;
+    border: 1px solid black;
+    border-radius: 4px;
+    font-size: 1rem;
+    background: white;
+    color: black;
+}
+
+.comments input[type="submit"],
+.comments button {
+    padding: 8px 16px;
+    border: 1px solid black;
+    background: white;
+    border-radius: 4px;
+    color: black;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 8px;
+}
+.post-meta-center {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 1rem;
+    color: #666;
+    margin: 10px 0 20px 0;
+}
+
+.post-author {
+    font-weight: 600;
+}
+
+.published-date {
+    font-style: italic;
+}
+
+
+.comments input[type="submit"]:hover,
+.comments button:hover {
+    background: black;
+    color: white;
+}
+
+.comment {
+    border-bottom: 1px solid black;
+    padding: 8px 0;
+}
+
+.comment-name {
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.filter-group {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.filter-group h3 {
+    margin-top: 0;
+    font-size: 1.1em;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+

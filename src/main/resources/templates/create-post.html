@@ -1,32 +1,55 @@
-<!Doctype>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Create Post</title>
+    <meta charset="UTF-8" />
+    <title>Create Post - My Blog Application</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
 </head>
 <body>
-<h1>My Blog Application</h1>
-<form th:action="@{/process-post}" th:object="${post}" method="post">
-    <label>Title:</label>
-    <input type="text" th:field="*{title}" required/><br/>
 
-    <label>Excerpt:</label>
-    <textarea th:field="*{excerpt}" rows="3" required></textarea><br/>
+<header>
+    <h1>My Blog Application</h1>
+</header>
 
-    <label>Content:</label>
-    <textarea th:field="*{content}" rows="6" required></textarea><br/>
-    <label>Tags (separate by #):</label>
-    <input type="text" th:field="*{tagsAsString}" placeholder="tag1#tag2#tag3" />
+<main class="form-container">
+    <form th:action="@{/process-post}" th:object="${post}" method="post" class="post-form">
 
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <input id="title" type="text" th:field="*{title}" required />
+        </div>
 
-    <label>Author:</label>
-    <input type="text" th:field="*{author}" required/><br/>
+        <div class="form-group">
+            <label for="excerpt">Excerpt:</label>
+            <textarea id="excerpt" th:field="*{excerpt}" rows="3" required></textarea>
+        </div>
 
-    <label>
-        <input type="checkbox" th:field="*{isPublished}" /> Published
-    </label><br/>
+        <div class="form-group">
+            <label for="content">Content:</label>
+            <textarea id="content" th:field="*{content}" rows="6" required></textarea>
+        </div>
 
-    <button type="submit">Save</button>
+        <div class="form-group">
+            <label for="tagsAsString">Tags (separate by #):</label>
+            <input id="tagsAsString" type="text" th:field="*{tagsAsString}" placeholder="tag1#tag2#tag3" required />
+        </div>
 
-</form>
+        <div class="form-group">
+            <label for="author">Author:</label>
+            <input id="author" type="text" th:field="*{author}" required />
+        </div>
+
+        <div class="form-group checkbox-group">
+            <input id="isPublished" type="checkbox" th:field="*{isPublished}" required/>
+            <label for="isPublished">Published</label>
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn-submit">Save</button>
+        </div>
+
+    </form>
+</main>
+
 </body>
 </html>

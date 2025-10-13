@@ -1,0 +1,62 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    color: black;
+    background: white;
+}
+
+h1 {
+    font-size: 2rem;
+    margin-bottom: 30px;
+}
+
+.form-container {
+    max-width: 600px;
+    margin: auto;
+    padding: 25px;
+    border: 1px solid black;
+    border-radius: 4px;
+    background: white;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+input[type="text"],
+textarea {
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 2px;
+    resize: vertical;
+    background: white;
+    color: black;
+    font-size: 1rem;
+}
+
+textarea {
+    min-height: 60px;
+}
+
+input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+    transform: scale(1.1);
+}
+
+button {
+    padding: 12px 20px;
+    border: 1px solid black;
+    border-radius: 4px;
+    background: white;
+    color: black;
+    font-weight: 700;
+    cursor: pointer;
+}
