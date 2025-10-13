@@ -5,13 +5,17 @@ import com.example.blogapplication.model.Tag;
 import com.example.blogapplication.repositories.PostRepository;
 import com.example.blogapplication.repositories.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.time.format.DateTimeParseException;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -50,73 +54,46 @@ public class PostService {
         return postRepository.findAll();
 
     }
+    public Page<Post> searchPosts(String search, List<String> authors, List<String> tags, List<String> publishedDates, String sort, Pageable pageable) {
 
-    public List<Post> searchPosts(String search, String author,String tag,String publishedDate, String sort) {
-         List<Post> posts;
-        if(search!=null)
-        {
-            search=search.trim();
-           return postRepository.findAllByTitleOrAuthorOrTagsOrContent(search);
+        if (search != null && !search.isBlank()) {
+            search = search.trim();
+            // Change your repository method to return a Page<Post>, accepting Pageable
+            return postRepository.findAllByTitleOrAuthorOrTagsOrContent(search, pageable);
         }
-//        else
-//        {
-//            posts=postRepository.findAll();
-//        }
-//        return posts;
-        else {
-            Specification<Post> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
 
-//            if (search != null && !search.isBlank()) {
-//                spec = spec.and(PostSpecification.hasSearchTerm(search.trim()));
-//            }
-            if (author != null && !author.isBlank()) {
-                spec = spec.and(PostSpecification.hasAuthor(author));
-            }
-            if (tag != null && !tag.isBlank()) {
-                spec = spec.and(PostSpecification.hasTag(tag));
-            }
-            if (publishedDate != null && !publishedDate.isBlank()) {
-                try {
-                    LocalDate date = LocalDate.parse(publishedDate);
-                    spec = spec.and(PostSpecification.hasPublishedDate(date));
-                } catch (DateTimeParseException e) {
-                    spec = spec.and(PostSpecification.hasPublishedDate(null));
-                }
-            }
+        Specification<Post> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
 
-            Sort sorting = Sort.by("publishedDate");
-            if ("asc".equalsIgnoreCase(sort)) {
-                sorting = sorting.ascending();
-            } else {
-                sorting = sorting.descending();
-            }
+        if (authors != null && !authors.isEmpty()) {
+            spec = spec.and(PostSpecification.hasAuthors(authors));
+        }
 
+        if (tags != null && !tags.isEmpty()) {
+            spec = spec.and(PostSpecification.hasTags(tags));
+        }
 
-            return postRepository.findAll(spec, sorting);
+        if (publishedDates != null && !publishedDates.isEmpty()) {
+            List<LocalDate> localDates = publishedDates.stream()
+                    .map(LocalDate::parse)
+                    .collect(Collectors.toList());
+
+            spec = spec.and(PostSpecification.hasPublishedDates(localDates));
+        }
+
+        // Adjust the sorting as part of Pageable or create new pageable with sorting
+        Sort sortObj = Sort.by("publishedDate");
+        if ("asc".equalsIgnoreCase(sort)) {
+            sortObj = sortObj.ascending();
+        } else {
+            sortObj = sortObj.descending();
+        }
+        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortObj);
+
+        return postRepository.findAll(spec, sortedPageable);
     }
-//        LocalDate date = null;
-//        if (publishedDate != null && !publishedDate.isBlank()) {
-//            try {
-//                date = LocalDate.parse(publishedDate);
-//            } catch (DateTimeParseException e) {
-//                // handle invalid date format or set date to null
-//            }
-//        }
-//
-//        if (search != null) {
-//            search = search.trim();
-//        }
-//
-//        // Pass null for any empty parameters to disable filters
-//        return postRepository.searchPostsNative(
-//                (search == null || search.isEmpty()) ? null : search,
-//                (author == null || author.isEmpty()) ? null : author,
-//                (tag == null || tag.isEmpty()) ? null : tag,
-//                date,
-//                (sort == null || (!sort.equalsIgnoreCase("asc") && !sort.equalsIgnoreCase("desc"))) ? "desc" : sort.toLowerCase()
-//        );
 
-
+    public Page<Post> getPosts(Pageable pageable) {
+        return postRepository.findAll(pageable);
     }
 
     public Post getById(Integer id) {
@@ -151,5 +128,41 @@ public class PostService {
             System.out.println("Post with ID " + postId + " not found.");
         }
     }
+
+//    public List<Post> searchPosts(String search, List<String> authors, List<String> tags, List<String> publishedDates, String sort) {
+//
+//        if (search != null && !search.isBlank()) {
+//            search = search.trim();
+//            return postRepository.findAllByTitleOrAuthorOrTagsOrContent(search);
+//        }
+//
+//        Specification<Post> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+//
+//        if (authors != null && !authors.isEmpty()) {
+//            spec = spec.and(PostSpecification.hasAuthors(authors));  // update spec method for List<String>
+//        }
+//
+//        if (tags != null && !tags.isEmpty()) {
+//            spec = spec.and(PostSpecification.hasTags(tags));  // update spec method for List<String>
+//        }
+//
+//        if (publishedDates != null) {
+//            List<LocalDate> localDates = publishedDates.stream()
+//                    .map(LocalDate::parse)
+//                    .collect(Collectors.toList());
+//
+//            spec = spec.and(PostSpecification.hasPublishedDates(localDates));
+//        }
+//
+//        Sort sorting = Sort.by("publishedDate");
+//        if ("asc".equalsIgnoreCase(sort)) {
+//            sorting = sorting.ascending();
+//        } else {
+//            sorting = sorting.descending();
+//        }
+//
+//        return postRepository.findAll(spec, sorting);
+//    }
+
 
 }

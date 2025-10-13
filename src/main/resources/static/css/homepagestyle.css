@@ -109,3 +109,32 @@ h1 { font-size: 2rem; text-align: left; margin-bottom: 28px; font-weight: bold; 
     position: absolute; bottom: 12px; right: 18px;
     font-size: 0.81rem; color: #888;
 }
+
+
+
+.pagination-simple {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.pagination-simple li {
+    flex: 1;
+}
+
+.pagination-simple li:first-child {
+    text-align: left;
+}
+
+.pagination-simple li:last-child {
+    text-align: right;
+}
+
+.pagination-simple li.disabled a {
+    pointer-events: none;
+    color: rgb(128, 128, 128);
+}
+

@@ -52,6 +52,9 @@
 package com.example.blogapplication.repositories;
 
 import com.example.blogapplication.model.Post;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -70,7 +73,15 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
             "OR LOWER(p.content) LIKE LOWER(CONCAT('%', :search, '%')) " +
             "OR LOWER(t.name) LIKE LOWER(CONCAT('%', :search, '%'))",
             nativeQuery = true)
-    List<Post> findAllByTitleOrAuthorOrTagsOrContent(@Param("search") String search);
+    Page<Post> findAllByTitleOrAuthorOrTagsOrContent(String search, Pageable pageable);
+   // List<Post> findAllByTitleOrAuthorOrTagsOrContent(@Param("search") String search);
+
+    // For full text search
+
+
+    // For specification search with pagination
+    Page<Post> findAll(Specification<Post> spec, Pageable pageable);
+
 
 //    @Query(value = "SELECT DISTINCT p.* FROM posts p " +
 //            "LEFT JOIN posts_tags pt ON p.post_id = pt.posts_post_id " +

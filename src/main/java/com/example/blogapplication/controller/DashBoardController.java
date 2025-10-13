@@ -191,12 +191,12 @@ import com.example.blogapplication.service.CommentService;
 import com.example.blogapplication.service.PostService;
 import com.example.blogapplication.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.awt.print.Pageable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -227,46 +227,115 @@ public class DashBoardController {
         return "redirect:/create-post";
     }
 
-    @GetMapping("/homepage")
-    public String getPost(/*@RequestParam(value = "page",defaultValue = "10")int page,*/ Model model) {
-       // Pageable pageable= (Pageable) PageRequest.of(page,10);
-        List<Post> listOfPost = postService.getAllPost();
-        model.addAttribute("posts", listOfPost);
+//    @GetMapping("/homepage")
+//    public String getPost(/*@RequestParam(value = "page",defaultValue = "10")int page,*/ Model model) {
+//       // Pageable pageable= (Pageable) PageRequest.of(page,10);
+//        List<Post> listOfPost = postService.getAllPost();
+//        model.addAttribute("posts", listOfPost);
+//
+//        addDropdownDataToModel(listOfPost, model);
+//
+//        return "homepage";
+//    }
 
-        addDropdownDataToModel(listOfPost, model);
+// Inside DashBoardController class:
+
+    @GetMapping("/homepage")
+    public String getPost(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            Model model) {
+
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> postPage = postService.getPosts(pageable);
+
+        model.addAttribute("posts", postPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", postPage.getTotalPages());
+        model.addAttribute("pageSize", size);
+
+        addDropdownDataToModel(postPage.getContent(), model);
 
         return "homepage";
     }
-
     @GetMapping("/search")
     public String search(@RequestParam(value = "search", required = false) String search,
-                         @RequestParam(value = "author", required = false) String author,
-                         @RequestParam(value = "tag", required = false) String tag,
-                         @RequestParam(value = "publishedDate", required = false) String publishedDate,
-                         @RequestParam(defaultValue = "desc", value = "sortBy", required = false) String sort,
+                         @RequestParam(value = "author", required = false) List<String> author,
+                         @RequestParam(value = "tag", required = false) List<String> tag,
+                         @RequestParam(value = "publishedDate", required = false) List<String> publishedDate,
+                         @RequestParam(defaultValue = "desc") String sort,
+                         @RequestParam(defaultValue = "0") int page,
+                         @RequestParam(defaultValue = "5") int size,
                          Model model) {
 
-        List<Post> filteredPosts = postService.searchPosts(search, author, tag, publishedDate, sort);
-        model.addAttribute("posts", filteredPosts);
-        addDropdownDataToModel(filteredPosts, model);
-//        List<Post> post=postService.getAllPost();
-//        Set<String> authors = new HashSet<>();
-//        Set<LocalDate> dates = new HashSet<>();
-//        for (var p : post) {
-//            authors.add(p.getAuthor());
-//            if (p.getPublishedDate() != null) {
-//                dates.add(p.getPublishedDate());
-//            }
-//        }
-//        List<String> tags = tagService.getAllTags();
-//
-//        model.addAttribute("authors", authors);
-//        model.addAttribute("dates", dates);
-//        model.addAttribute("tags", tags);
-//        model.addAttribute("sortBy", sort);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> filteredPostsPage = postService.searchPosts(search, author, tag, publishedDate, sort, pageable);
+
+        model.addAttribute("posts", filteredPostsPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", filteredPostsPage.getTotalPages());
+        model.addAttribute("pageSize", size);
+
+        addDropdownDataToModel(filteredPostsPage.getContent(), model);
 
         return "homepage";
     }
+
+
+//    @GetMapping("/search")
+//    public String search(@RequestParam(value = "search", required = false) String search,
+//                         @RequestParam(value = "author", required = false) List<String> author,
+//                         @RequestParam(value = "tag", required = false) List<String> tag,
+//                         @RequestParam(value = "publishedDate", required = false) List<String> publishedDate,
+//                         @RequestParam(defaultValue = "desc", value = "sortBy", required = false) String sort,
+//                         Model model) {
+//
+//        List<Post> filteredPosts = postService.searchPosts(search, author, tag, publishedDate, sort);
+//        model.addAttribute("posts", filteredPosts);
+//
+//        // Add pagination attributes with default values
+//        model.addAttribute("currentPage", 0);
+//        model.addAttribute("totalPages", 1);
+//        model.addAttribute("pageSize", filteredPosts.size());
+//
+//        addDropdownDataToModel(filteredPosts, model);
+//
+//        return "homepage";
+//    }
+
+
+
+
+//    @GetMapping("/search")
+//    public String search(@RequestParam(value = "search", required = false) String search,
+//                         @RequestParam(value = "author", required = false) List<String> author,
+//                         @RequestParam(value = "tag", required = false) List<String> tag,
+//                         @RequestParam(value = "publishedDate", required = false) List<String> publishedDate,
+//                         @RequestParam(defaultValue = "desc", value = "sortBy", required = false) String sort,
+//                         Model model) {
+//
+//        List<Post> filteredPosts = postService.searchPosts(search, author, tag, publishedDate, sort);
+//        model.addAttribute("posts", filteredPosts);
+//        addDropdownDataToModel(filteredPosts, model);
+////        List<Post> post=postService.getAllPost();
+////        Set<String> authors = new HashSet<>();
+////        Set<LocalDate> dates = new HashSet<>();
+////        for (var p : post) {
+////            authors.add(p.getAuthor());
+////            if (p.getPublishedDate() != null) {
+////                dates.add(p.getPublishedDate());
+////            }
+////        }
+////        List<String> tags = tagService.getAllTags();
+////
+////        model.addAttribute("authors", authors);
+////        model.addAttribute("dates", dates);
+////        model.addAttribute("tags", tags);
+////        model.addAttribute("sortBy", sort);
+//
+//        return "homepage";
+//    }
 
 
 //    @GetMapping("/view-post/{postId}")

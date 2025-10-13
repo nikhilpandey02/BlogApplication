@@ -6,6 +6,7 @@ import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class PostSpecification {
 
@@ -33,31 +34,35 @@ public class PostSpecification {
 //        };
 //    }
 
-    public static Specification<Post> hasAuthor(String author) {
+    public static Specification<Post> hasAuthors(List<String> authors) {
         return (root, query, cb) -> {
-            if (author == null || author.isEmpty()) {
+            if (authors == null || authors.isEmpty()) {
                 return cb.conjunction();
             }
-            return cb.equal(root.get("author"), author);
+            return root.get("author").in(authors);
         };
     }
 
-    public static Specification<Post> hasTag(String tag) {
+    public static Specification<Post> hasTags(List<String> tags) {
         return (root, query, cb) -> {
-            if (tag == null || tag.isEmpty()) {
+            if (tags == null || tags.isEmpty()) {
                 return cb.conjunction();
             }
-            Join<Post, Tag> tags = root.joinSet("tags", JoinType.LEFT);
-            return cb.equal(tags.get("name"), tag);
+            // Join with tags collection
+            Join<Post, Tag> tagJoin = root.joinSet("tags", JoinType.LEFT);
+
+            // Create predicate for tags "IN" list
+            return tagJoin.get("name").in(tags);
         };
     }
 
-    public static Specification<Post> hasPublishedDate(LocalDate date) {
+    public static Specification<Post> hasPublishedDates(List<LocalDate> dates) {
         return (root, query, cb) -> {
-            if (date == null) {
+            if (dates == null || dates.isEmpty()) {
                 return cb.conjunction();
             }
-            return cb.equal(root.get("publishedDate"), date);
+            return root.get("publishedDate").in(dates);
         };
     }
+
 }

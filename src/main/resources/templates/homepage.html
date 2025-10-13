@@ -3,9 +3,74 @@
 <head>
     <title>Home Page</title>
     <link rel="stylesheet" th:href="@{/css/homepagestyle.css}" />
+    <style>
+        .dropdown-checkbox {
+            position: relative;
+            width: 220px;
+            user-select: none;
+            display: inline-block;
+            margin-right: 15px;
+        }
+        .dropdown-checkbox input.toggle {
+            display: none;
+        }
+        .dropdown-checkbox-label {
+            display: block;
+            padding: 10px;
+            border: 1px solid #000;
+            border-radius: 5px;
+            background: #fff;
+            cursor: pointer;
+            font-weight: 600;
+            color: #000;
+            position: relative;
+        }
+        .dropdown-checkbox-label::after {
+            content: "▼";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7em;
+            color: #000;
+        }
+        .dropdown-checkbox-panel {
+            display: none;
+            position: absolute;
+            z-index: 1000;
+            width: 100%;
+            max-height: 160px;
+            overflow-y: auto;
+            background: #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            margin-top: 3px;
+            border: 1px solid #000;
+            border-radius: 5px;
+            padding: 8px 12px;
+            box-sizing: border-box;
+        }
+        .dropdown-checkbox input.toggle:checked ~ .dropdown-checkbox-panel {
+            display: block;
+        }
+        .dropdown-checkbox-panel label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 4px 0;
+            font-size: 0.9rem;
+            color: #000;
+        }
+        .dropdown-checkbox-panel label:hover {
+            background-color: #f0f0f0;
+        }
+        .dropdown-checkbox-panel input[type="checkbox"] {
+            margin-right: 8px;
+        }
+    </style>
+
 </head>
 <body>
-<h1>Welcome to the Home Page</h1>
+<h1>Welcome to Blog Page</h1>
 
 <!-- Search bar at top, right-aligned -->
 <div class="search-row">
@@ -17,18 +82,39 @@
 
 <!-- Filters in a separate bar below -->
 <form class="filters-form" th:action="@{/search}" method="get">
-    <select name="author">
-        <option value="">Select Author</option>
-        <option th:each="author : ${authors}" th:value="${author}" th:text="${author}"></option>
-    </select>
-    <select name="publishedDate">
-        <option value="">Select Published Date</option>
-        <option th:each="date : ${dates}" th:value="${date}" th:text="${date}"></option>
-    </select>
-    <select name="tag">
-        <option value="">Select Tag</option>
-        <option th:each="tag : ${tags}" th:value="${tag}" th:text="${tag}"></option>
-    </select>
+
+    <div class="dropdown-checkbox">
+        <input type="checkbox" class="toggle" id="toggleAuthors" />
+        <label for="toggleAuthors" class="dropdown-checkbox-label">Select Authors</label>
+        <div class="dropdown-checkbox-panel">
+            <label th:each="author : ${authors}">
+                <input type="checkbox" name="author" th:value="${author}" />
+                <span th:text="${author}"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="dropdown-checkbox">
+        <input type="checkbox" class="toggle" id="toggleDates" />
+        <label for="toggleDates" class="dropdown-checkbox-label">Select Published Dates</label>
+        <div class="dropdown-checkbox-panel">
+            <label th:each="date : ${dates}">
+                <input type="checkbox" name="publishedDate" th:value="${date}" />
+                <span th:text="${date}"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="dropdown-checkbox">
+        <input type="checkbox" class="toggle" id="toggleTags" />
+        <label for="toggleTags" class="dropdown-checkbox-label">Select Tags</label>
+        <div class="dropdown-checkbox-panel">
+            <label th:each="tag : ${tags}">
+                <input type="checkbox" name="tag" th:value="${tag}" />
+                <span th:text="${tag}"></span>
+            </label>
+        </div>
+    </div>
     <select name="sortBy">
         <option value="desc">Newest First</option>
         <option value="asc">Oldest First</option>
@@ -53,5 +139,22 @@
         </div>
     </div>
 </div>
+<footer>
+    <nav>
+        <ul class="pagination-simple">
+            <li th:classappend="${currentPage == 0} ? 'disabled'">
+                <a th:href="@{/homepage(page=${currentPage > 0 ? currentPage - 1 : 0}, size=${pageSize})}">Prev</a>
+            </li>
+            <li th:classappend="${(currentPage ?: 0) + 1 >= (totalPages ?: 1)} ? 'disabled' : ''">
+                <a th:href="@{/homepage(page=${(currentPage ?: 0) + 1 < (totalPages ?: 1) ? (currentPage ?: 0) + 1 : (currentPage ?: 0)}, size=${pageSize})}"
+                >Next</a>
+            </li>
+        </ul>
+    </nav>
+</footer>
+
+
+
+
 </body>
 </html>
