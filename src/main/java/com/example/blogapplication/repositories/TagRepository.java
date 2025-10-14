@@ -13,7 +13,6 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
 
     Tag findByName(String name);
 
-
     @Query("SELECT DISTINCT t.name FROM tags t")
     List<String> findDistinctTagNames();
 

@@ -17,10 +17,7 @@ public class Tag extends BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
     private String name;
-
-    //change this to list
     @ManyToMany(mappedBy = "tags")
     private Set<Post> posts;
 

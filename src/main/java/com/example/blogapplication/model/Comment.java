@@ -29,5 +29,4 @@ public class Comment extends BaseModel {
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    // Getters and setters
 }
