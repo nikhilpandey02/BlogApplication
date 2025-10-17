@@ -45,4 +45,9 @@ public class Post extends BaseModel {
 
     @Transient
     private String tagsAsString;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "author_id")
+    private User authorUser;
+
 }

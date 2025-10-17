@@ -1,34 +1,32 @@
 package com.example.blogapplication.service;
+
 import com.example.blogapplication.model.Comment;
 import com.example.blogapplication.model.Post;
 import com.example.blogapplication.model.Tag;
 import com.example.blogapplication.repositories.PostRepository;
 import com.example.blogapplication.repositories.TagRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-import java.time.LocalDate;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import java.time.format.DateTimeParseException;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class PostService {
 
-    @Autowired
-    private PostRepository postRepository;
+    private final PostRepository postRepository;
+    private final TagRepository tagRepository;
 
-    @Autowired
-    private TagRepository tagRepository;
+    public PostService(PostRepository postRepository, TagRepository tagRepository) {
+        this.postRepository = postRepository;
+        this.tagRepository = tagRepository;
+    }
 
+    // --- SAVE OR UPDATE POST ---
     public void savePost(Post post) {
+        // Handle tags
         String tagsString = post.getTagsAsString();
-
         if (tagsString != null && !tagsString.isEmpty()) {
             String[] tagNames = tagsString.split("#");
             Set<Tag> tags = new HashSet<>();
@@ -50,6 +48,35 @@ public class PostService {
         postRepository.save(post);
     }
 
+    public Page<Post> getPosts(Pageable pageable) {
+        return postRepository.findAll(pageable);
+    }
+
+    public Post getById(Integer id) {
+        return postRepository.findById(id).orElse(null);
+    }
+    public void addComment(Integer postId, String name, String email, String content) {
+        Post post = getById(postId);
+        if (post != null) {
+            Comment comment = new Comment();
+            comment.setName(name);
+            comment.setEmail(email);
+            comment.setComment(content);
+            comment.setPost(post);
+
+            List<Comment> comments = post.getComments();
+            if (comments == null) comments = new ArrayList<>();
+            comments.add(comment);
+            post.setComments(comments);
+
+            postRepository.save(post);
+        }
+    }
+
+    public void deletePost(Integer postId) {
+        postRepository.deleteById(postId);
+    }
+
     public Page<Post> searchPosts(
             String search,
             List<String> authors,
@@ -59,13 +86,11 @@ public class PostService {
             Pageable pageable
     ) {
 
-        Sort sortObj = Sort.by("published_at");
-        sortObj = "asc".equalsIgnoreCase(sort) ? sortObj.ascending() : sortObj.descending();
-        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortObj);
+        Pageable pageableWithoutSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.unsorted());
 
         if (search != null && !search.isBlank()) {
             search = search.trim();
-            return postRepository.findAllByTitleOrAuthorOrTagsOrContent(search, sortedPageable);
+            return postRepository.findAllByTitleOrAuthorOrTagsOrContent(search, pageableWithoutSort);
         } else {
             List<LocalDate> publishedDatesLocal = (publishedDates == null ? null :
                     publishedDates.stream()
@@ -76,64 +101,8 @@ public class PostService {
                     authors, authors == null ? 0 : authors.size(),
                     tags, tags == null ? 0 : tags.size(),
                     publishedDatesLocal, publishedDatesLocal == null ? 0 : publishedDatesLocal.size(),
-                    sortedPageable
+                    pageableWithoutSort
             );
-
         }
     }
-    public Page<Post> getPosts(Pageable pageable) {
-        return postRepository.findAll(pageable);
-    }
-    public Post getById(Integer id) {
-        Optional<Post> post= postRepository.findById(id);
-        if(post.isPresent())
-        {
-            return post.get();
-        }else
-            return null;
-    }
-    public void deletePost(Integer postId) {
-        postRepository.deleteById(postId);
-    }
-
-    public void addComment(Integer postId, String content) {
-        Optional<Post> optionalPost = postRepository.findById(postId);
-        if (optionalPost.isPresent()) {
-            Post post = optionalPost.get();
-            Comment comment=new Comment();
-            comment.setComment(content);
-            comment.setPost(post);
-            List<Comment> listComments= post.getComments();
-            if(listComments==null)
-            {
-                listComments=new ArrayList<>();
-            }
-            listComments.add(comment);
-            post.setComments(listComments);
-            postRepository.save(post);
-            System.out.println("Adding comment to post ID " + postId + ": " + content);
-        } else {
-            System.out.println("Post with ID " + postId + " not found.");
-        }
-    }
-    public void addComment(Integer postId, String name, String email, String content) {
-        Optional<Post> optionalPost = postRepository.findById(postId);
-        if (optionalPost.isPresent()) {
-            Post post = optionalPost.get();
-            Comment comment = new Comment();
-            comment.setName(name);          // Set commenter name
-            comment.setEmail(email);        // Set commenter email (new)
-            comment.setComment(content);
-            comment.setPost(post);
-            List<Comment> listComments = post.getComments();
-            if (listComments == null) {
-                listComments = new ArrayList<>();
-            }
-            listComments.add(comment);
-            post.setComments(listComments);
-            postRepository.save(post);
-        }
-    }
-
-
 }

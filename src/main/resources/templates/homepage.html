@@ -1,11 +1,25 @@
+
+
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Home Page</title>
     <link rel="stylesheet" th:href="@{/css/homepagestyle.css}" />
 </head>
 <body>
-<h1>Welcome to Blog Page</h1>
+
+<header>
+    <h1>Welcome to Blog Page</h1>
+    <nav>
+        <a th:href="@{/homepage}">Home</a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/create-post}">Create Post</a>
+        <a sec:authorize="!isAuthenticated()" th:href="@{/showLoginPage}">Login</a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/logout}">Logout</a>
+    </nav>
+</header>
 
 <div class="search-row">
     <form class="search-form" th:action="@{/search}" method="get">
@@ -24,6 +38,7 @@
             </label>
         </div>
     </div>
+
     <div class="filter-block">
         <div class="filter-label">Tags</div>
         <div class="filter-options">
@@ -33,6 +48,7 @@
             </label>
         </div>
     </div>
+
     <div class="filter-block">
         <div class="filter-label">Published Dates</div>
         <div class="filter-options">
@@ -42,9 +58,10 @@
             </label>
         </div>
     </div>
+
     <div class="filter-block">
         <div class="filter-label">Sort</div>
-        <select name="sortBy">
+        <select name="sort">
             <option value="desc">Newest First</option>
             <option value="asc">Oldest First</option>
         </select>
@@ -56,11 +73,14 @@
     <div th:each="post : ${posts}" class="post-box">
         <div class="post-title" th:text="${post.title}"></div>
         <div class="post-meta-row">
-            <span th:text="${post.author}"></span>
-            <span th:if="${post.publishedDate}">, <span th:text="${post.publishedDate}"></span></span>
+            <span th:text="${post.authorUser != null ? post.authorUser.name : post.author}"></span>
+            <span th:if="${post.publishedDate != null}">, <span th:text="${post.publishedDate}"></span></span>
         </div>
+
         <div class="post-excerpt" th:text="${post.excerpt}"></div>
-        <div class="post-content" th:text="${post.content}"></div>
+        <div class="post-content" th:utext="${post.content}"></div>
+
+
         <div class="tags">
             <span th:each="tag : ${post.tags}" class="tag" th:text="${tag.name}"></span>
         </div>
@@ -84,7 +104,6 @@
         </ul>
     </nav>
 </footer>
+
 </body>
 </html>
-
-

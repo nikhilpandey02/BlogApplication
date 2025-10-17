@@ -2,108 +2,161 @@ package com.example.blogapplication.controller;
 
 import com.example.blogapplication.model.Comment;
 import com.example.blogapplication.model.Post;
+import com.example.blogapplication.model.User;
 import com.example.blogapplication.service.CommentService;
 import com.example.blogapplication.service.PostService;
 import com.example.blogapplication.service.TagService;
+import com.example.blogapplication.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Controller
 public class DashBoardController {
 
     @Autowired
-    PostService postService;
+    private PostService postService;
 
     @Autowired
-    CommentService commentService;
+    private CommentService commentService;
 
     @Autowired
-    TagService tagService;
+    private TagService tagService;
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping("/showLoginPage")
+    public String showLoginPage() {
+        return "login";
+    }
+
+    @GetMapping("/signup")
+    public String showSignupForm(Model model) {
+        model.addAttribute("user", new User());
+        return "signup";
+    }
+
+    @PostMapping("/signup")
+    public String processSignup(@ModelAttribute User user, Model model) {
+        boolean success = userService.registerUser(user);
+        if (!success) {
+            model.addAttribute("error", "User with that name/email already exists");
+            return "signup";
+        }
+        return "redirect:/showLoginPage?signupSuccess";
+    }
 
     @GetMapping("/create-post")
-    public String showDashboard(Model model) {
-        model.addAttribute("post", new Post());
+    public String showCreatePost(Model model) {
+        Post post = new Post();
+        User loggedInUser = getLoggedInUser();
+
+        if (loggedInUser != null) {
+            post.setAuthorUser(loggedInUser);
+            post.setAuthor(loggedInUser.getName());
+
+            if (loggedInUser.hasRole("ROLE_ADMIN")) {
+                model.addAttribute("users", userService.getAllUsers());
+            }
+        }
+
+        model.addAttribute("post", post);
         return "createpost";
     }
 
     @PostMapping("/process-post")
     public String processPost(Post post) {
+        User loggedInUser = getLoggedInUser();
+        if (loggedInUser != null) {
+            post.setAuthor(loggedInUser.getName());
+            post.setAuthorUser(loggedInUser);
+        }
         postService.savePost(post);
-        return "redirect:/create-post";
+        return "redirect:/homepage";
     }
-
 
     @GetMapping("/homepage")
-    public String getPost(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            Model model) {
+    public String getPosts(@RequestParam(defaultValue = "0") int page,
+                           @RequestParam(defaultValue = "10") int size,
+                           Model model) {
 
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("publishedDate").descending());
         Page<Post> postPage = postService.getPosts(pageable);
 
-        model.addAttribute("posts", postPage.getContent());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", postPage.getTotalPages());
-        model.addAttribute("pageSize", size);
-
-        addDropdownDataToModel(postPage.getContent(), model);
-
+        addPostsToModel(model, postPage, page, size);
         return "homepage";
     }
+
     @GetMapping("/search")
-    public String search(@RequestParam(value = "search", required = false) String search,
-                         @RequestParam(value = "author", required = false) List<String> author,
-                         @RequestParam(value = "tag", required = false) List<String> tag,
-                         @RequestParam(value = "publishedDate", required = false) List<String> publishedDate,
-                         @RequestParam(defaultValue = "desc") String sort,
-                         @RequestParam(defaultValue = "0") int page,
-                         @RequestParam(defaultValue = "10") int size,
-                         Model model) {
+    public String searchPosts(@RequestParam(value = "search", required = false) String search,
+                              @RequestParam(value = "author", required = false) List<String> authors,
+                              @RequestParam(value = "tag", required = false) List<String> tags,
+                              @RequestParam(value = "publishedDate", required = false) List<String> publishedDates,
+                              @RequestParam(defaultValue = "desc") String sort,
+                              @RequestParam(defaultValue = "0") int page,
+                              @RequestParam(defaultValue = "10") int size,
+                              Model model) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<Post> filteredPostsPage = postService.searchPosts(search, author, tag, publishedDate, sort, pageable);
+        Page<Post> postPage = postService.searchPosts(search, authors, tags, publishedDates, sort, pageable);
 
-        model.addAttribute("posts", filteredPostsPage.getContent());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", filteredPostsPage.getTotalPages());
-        model.addAttribute("pageSize", size);
-
-        addDropdownDataToModel(filteredPostsPage.getContent(), model);
-
+        addPostsToModel(model, postPage, page, size);
         return "homepage";
     }
 
-@GetMapping("/view-post/{postId}")
-public String viewPost(@PathVariable Integer postId,
-                       @RequestParam(required = false) Integer editCommentId,
-                       Model model) {
-    Post post = postService.getById(postId);
-    model.addAttribute("post", post);
-    model.addAttribute("editCommentId", editCommentId);
-    return "viewpost";
-}
+    @GetMapping("/view-post/{postId}")
+    public String viewPost(@PathVariable Integer postId,
+                           @RequestParam(required = false) Integer editCommentId,
+                           Model model) {
 
+        Post post = postService.getById(postId);
+        model.addAttribute("post", post);
+        model.addAttribute("editCommentId", editCommentId);
+
+        User loggedInUser = getLoggedInUser();
+        List<Integer> editableCommentIds = new ArrayList<>();
+
+        if (loggedInUser != null) {
+            for (Comment c : post.getComments()) {
+                if (loggedInUser.hasRole("ROLE_ADMIN") ||
+                        (c.getEmail() != null && c.getEmail().equals(loggedInUser.getEmail()))) {
+                    editableCommentIds.add(c.getId());
+                }
+            }
+        }
+        model.addAttribute("editableCommentIds", editableCommentIds);
+
+        return "viewpost";
+    }
 
     @PostMapping("/update-post/{postId}")
-    public String updateData(@PathVariable Integer postId, Model model) {
+    public String updatePost(@PathVariable Integer postId, Model model) {
         Post post = postService.getById(postId);
+        User loggedInUser = getLoggedInUser();
+
+        if (!loggedInUser.hasRole("ROLE_ADMIN") && !post.getAuthor().equals(loggedInUser.getName())) {
+            return "redirect:/homepage";
+        }
+
         StringBuilder tagsAsString = new StringBuilder();
         for (var tag : post.getTags()) {
             tagsAsString.append("#").append(tag.getName()).append(" ");
         }
         post.setTagsAsString(tagsAsString.toString().trim());
         model.addAttribute("post", post);
+
+        if (loggedInUser.hasRole("ROLE_ADMIN")) {
+            model.addAttribute("users", userService.getAllUsers());
+        }
+
         return "updatepost";
     }
 
@@ -115,40 +168,34 @@ public String viewPost(@PathVariable Integer postId,
 
     @PostMapping("/delete-post/{id}")
     public String deletePost(@PathVariable Integer id) {
+        Post post = postService.getById(id);
+        User loggedInUser = getLoggedInUser();
+
+        if (!loggedInUser.hasRole("ROLE_ADMIN") && !post.getAuthor().equals(loggedInUser.getName())) {
+            return "redirect:/homepage";
+        }
+
         postService.deletePost(id);
         return "redirect:/homepage";
     }
 
-//    @PostMapping("/add-comment/{postId}")
-//    public String addComment(@PathVariable Integer postId, @RequestParam String content) {
-//        postService.addComment(postId, content);
-//        return "redirect:/view-post/" + postId;
-//    }
-@PostMapping("/add-comment/{postId}")
-public String addComment(@PathVariable Integer postId,
-                         @RequestParam String name,
-                         @RequestParam String email,
-                         @RequestParam String content) {
+    @PostMapping("/add-comment/{postId}")
+    public String addComment(@PathVariable Integer postId, @RequestParam String content) {
+        User loggedInUser = getLoggedInUser();
+        if (loggedInUser == null) return "redirect:/showLoginPage";
 
-    if (name == null || name.trim().isEmpty() ||
-            email == null || email.trim().isEmpty()) {
-        // Early exit on invalid input - no further processing
+        postService.addComment(postId, loggedInUser.getName(), loggedInUser.getEmail(), content);
         return "redirect:/view-post/" + postId;
     }
 
-    // Only if validation passes, add comment and return
-    postService.addComment(postId, name, email, content);
-    return "redirect:/view-post/" + postId;
-}
-
-
     @PostMapping("/edit-comment/{commentId}")
     public String editComment(@PathVariable Integer commentId,
-                              @RequestParam Integer postId, Model model) {
+                              @RequestParam Integer postId,
+                              Model model) {
+
         Comment comment = commentService.getCommentById(commentId);
         model.addAttribute("comment", comment);
-        model.addAttribute("postiding", postId);
-        model.addAttribute("commentId", commentId);
+        model.addAttribute("postId", postId);
         return "editcomment";
     }
 
@@ -166,26 +213,33 @@ public String addComment(@PathVariable Integer postId,
         return "redirect:/view-post/" + postId;
     }
 
-    private void addDropdownDataToModel(List<Post> posts, Model model) {
-        List<String> authors = new ArrayList<>();
+    private void addPostsToModel(Model model, Page<Post> postPage, int currentPage, int pageSize) {
+        List<Post> posts = postPage.getContent();
+        model.addAttribute("posts", posts);
+        model.addAttribute("currentPage", currentPage);
+        model.addAttribute("totalPages", postPage.getTotalPages());
+        model.addAttribute("pageSize", pageSize);
+
+        Set<String> authors = new HashSet<>();
+        Set<String> tags = new HashSet<>();
         List<LocalDate> dates = new ArrayList<>();
-        Set<String> listOfTags = new HashSet<>();
-        for (var post : posts) {
-            if (!authors.contains(post.getAuthor())) {
-                authors.add(post.getAuthor());
-            }
-            if (post.getPublishedDate() != null && !dates.contains(post.getPublishedDate())) {
-                dates.add(post.getPublishedDate());
-            }
-        }
-        for(var Tag:posts) {
-            for (var t : Tag.getTags()) {
-                listOfTags.add(t.getName());
-            }
+
+        for (Post p : posts) {
+            if (p.getAuthor() != null) authors.add(p.getAuthor());
+            if (p.getPublishedDate() != null) dates.add(p.getPublishedDate());
+            for (var t : p.getTags()) tags.add(t.getName());
         }
 
         model.addAttribute("authors", authors);
+        model.addAttribute("tags", tags);
         model.addAttribute("dates", dates);
-        model.addAttribute("tags", listOfTags);
+    }
+
+    private User getLoggedInUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+            return userService.findByEmail(auth.getName());
+        }
+        return null;
     }
 }
