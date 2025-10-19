@@ -73,7 +73,7 @@
     <div th:each="post : ${posts}" class="post-box">
         <div class="post-title" th:text="${post.title}"></div>
         <div class="post-meta-row">
-            <span th:text="${post.authorUser != null ? post.authorUser.name : post.author}"></span>
+            <span th:text="${post.authorUser != null ? post.authorUser.name : 'Unknown Author'}"></span>
             <span th:if="${post.publishedDate != null}">, <span th:text="${post.publishedDate}"></span></span>
         </div>
 
@@ -95,11 +95,13 @@
         <ul class="pagination-simple">
             <li th:classappend="${currentPage == 0} ? 'disabled'">
                 <span th:if="${currentPage == 0}">Prev</span>
-                <a th:if="${currentPage > 0}" th:href="@{/homepage(page=${currentPage -1}, size=${pageSize})}">Prev</a>
+                <a th:if="${currentPage > 0}" th:href="@{/homepage(page=${currentPage -1},
+                 size=${pageSize})}">Prev</a>
             </li>
             <li th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
                 <span th:if="${currentPage + 1 >= totalPages}">Next</span>
-                <a th:if="${currentPage + 1 < totalPages}" th:href="@{/homepage(page=${currentPage+1}, size=${pageSize})}">Next</a>
+                <a th:if="${currentPage + 1 < totalPages}" th:href="@{/homepage(page=${currentPage+1},
+                 size=${pageSize})}">Next</a>
             </li>
         </ul>
     </nav>

@@ -5,11 +5,17 @@ import com.example.blogapplication.model.Post;
 import com.example.blogapplication.model.Tag;
 import com.example.blogapplication.repositories.PostRepository;
 import com.example.blogapplication.repositories.TagRepository;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,13 +29,12 @@ public class PostService {
         this.tagRepository = tagRepository;
     }
 
-    // --- SAVE OR UPDATE POST ---
     public void savePost(Post post) {
-        // Handle tags
         String tagsString = post.getTagsAsString();
+        Set<Tag> tags = new HashSet<>();
+
         if (tagsString != null && !tagsString.isEmpty()) {
             String[] tagNames = tagsString.split("#");
-            Set<Tag> tags = new HashSet<>();
             for (String tagName : tagNames) {
                 tagName = tagName.trim();
                 if (!tagName.isEmpty()) {
@@ -42,12 +47,17 @@ public class PostService {
                     tags.add(tag);
                 }
             }
-            post.setTags(tags);
         }
 
-        postRepository.save(post);
+        Post savedPost = null;
+        if (post.getPostId() == null) {
+            savedPost = postRepository.save(post);
+        } else {
+            savedPost = post;
+        }
+        savedPost.setTags(tags);
+        postRepository.save(savedPost);
     }
-
     public Page<Post> getPosts(Pageable pageable) {
         return postRepository.findAll(pageable);
     }
@@ -86,7 +96,8 @@ public class PostService {
             Pageable pageable
     ) {
 
-        Pageable pageableWithoutSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.unsorted());
+        Pageable pageableWithoutSort = PageRequest.of(pageable.getPageNumber(),
+                pageable.getPageSize(), Sort.unsorted());
 
         if (search != null && !search.isBlank()) {
             search = search.trim();

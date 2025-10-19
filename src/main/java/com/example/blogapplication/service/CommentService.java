@@ -1,4 +1,5 @@
 package com.example.blogapplication.service;
+
 import com.example.blogapplication.model.Comment;
 import com.example.blogapplication.repositories.CommentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ public class CommentService {
     }
 
     public Comment getCommentById(Integer commentId) {
+
         return commentRepository.findById(commentId).orElse(null);
     }
 }

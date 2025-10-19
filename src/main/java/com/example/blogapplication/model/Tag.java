@@ -1,24 +1,26 @@
 package com.example.blogapplication.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.util.Set;
 
-@Entity(name="tags")
+@Entity(name = "tags")
 @Getter
 @Setter
-
 public class Tag extends BaseModel {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Integer id;
-    private String name;
-    @ManyToMany(mappedBy = "tags")
-    private Set<Post> posts;
 
+    @Column(name = "name",unique = true)
+    private String name;
+
+    @ManyToMany(mappedBy = "tags")
+    @JsonIgnore
+    private Set<Post> posts;
 }

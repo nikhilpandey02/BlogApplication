@@ -3,36 +3,41 @@
 <head>
     <title>Login</title>
 </head>
-<body>
-<h2>Login</h2>
+<body style="display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0;">
 
-<form th:action="@{/login}" method="post">
-    <div>
-        <label>Email:</label>
-        <input type="email" name="email" required />
+<div style="width: 100%; max-width: 300px; padding: 20px; border: 1px solid #ccc;">
+    <h2 style="text-align: center;">Login</h2>
+
+    <form th:action="@{/login}" method="post">
+        <div style="margin-bottom: 10px;">
+            <label for="email-input" style="display: block; margin-bottom: 5px;">Email:</label>
+            <input type="email" id="email-input" name="email" required
+                   style="width: 100%; padding: 5px; border: 1px solid #000; box-sizing: border-box;" />
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label for="password-input" style="display: block; margin-bottom: 5px;">Password:</label>
+            <input type="password" id="password-input" name="password" required
+                   style="width: 100%; padding: 5px; border: 1px solid #000; box-sizing: border-box;" />
+        </div>
+        <div>
+            <button type="submit" style="width: 100%; padding: 8px; border: 1px solid #000; cursor: pointer;">
+                Login
+            </button>
+        </div>
+    </form>
+
+    <div th:if="${param.error}" style="margin-top: 10px; padding: 5px; border: 1px solid red; text-align: center;">
+        Invalid username or password.
     </div>
-    <div>
-        <label>Password:</label>
-        <input type="password" name="password" required />
+    <div th:if="${param.logout}" style="margin-top: 10px; padding: 5px; border: 1px solid green; text-align: center;">
+        You have been logged out.
     </div>
-    <div>
-        <button type="submit">Login</button>
+    <div th:if="${param.signupSuccess}" style="margin-top: 10px; padding: 5px; border: 1px solid green; text-align: center;">
+        Signup successful! Please login.
     </div>
-</form>
 
-
-
-<div th:if="${param.error}">
-    Invalid username or password.
+    <a th:href="@{/signup}" style="display: block; text-align: center; margin-top: 10px;">Sign Up</a>
 </div>
-<div th:if="${param.logout}">
-    You have been logged out.
-</div>
-<div th:if="${param.signupSuccess}">
-    Signup successful! Please login.
-</div>
-
-<a th:href="@{/signup}">Sign Up</a>
 
 </body>
 </html>

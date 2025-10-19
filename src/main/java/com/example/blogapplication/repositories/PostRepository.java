@@ -1,4 +1,5 @@
 package com.example.blogapplication.repositories;
+
 import com.example.blogapplication.model.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,12 +14,11 @@ import java.util.List;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Integer> {
 
-    // --- SEARCH BY TITLE / AUTHOR / TAGS / CONTENT ---
     @Query(
             value = "SELECT DISTINCT p.* FROM posts p " +
                     "LEFT JOIN users u ON p.author_id = u.id " +
-                    "LEFT JOIN posts_tags pt ON p.post_id = pt.posts_post_id " +
-                    "LEFT JOIN tags t ON pt.tags_id = t.id " +
+                    "LEFT JOIN post_tags pt ON p.post_id = pt.post_id " +
+                    "LEFT JOIN tags t ON pt.tag_id = t.id " +
                     "WHERE LOWER(p.title) LIKE LOWER(CONCAT('%', :search, '%')) " +
                     "OR LOWER(u.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
                     "OR LOWER(p.content) LIKE LOWER(CONCAT('%', :search, '%')) " +
@@ -26,8 +26,8 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
                     "ORDER BY p.published_at DESC",
             countQuery = "SELECT COUNT(DISTINCT p.post_id) FROM posts p " +
                     "LEFT JOIN users u ON p.author_id = u.id " +
-                    "LEFT JOIN posts_tags pt ON p.post_id = pt.posts_post_id " +
-                    "LEFT JOIN tags t ON pt.tags_id = t.id " +
+                    "LEFT JOIN post_tags pt ON p.post_id = pt.post_id " +
+                    "LEFT JOIN tags t ON pt.tag_id = t.id " +
                     "WHERE LOWER(p.title) LIKE LOWER(CONCAT('%', :search, '%')) " +
                     "OR LOWER(u.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
                     "OR LOWER(p.content) LIKE LOWER(CONCAT('%', :search, '%')) " +
@@ -39,20 +39,19 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             Pageable pageable
     );
 
-    // --- FILTER WITH AUTHORS / TAGS / DATES ---
     @Query(
             value = "SELECT DISTINCT p.* FROM posts p " +
                     "LEFT JOIN users u ON p.author_id = u.id " +
-                    "LEFT JOIN posts_tags pt ON p.post_id = pt.posts_post_id " +
-                    "LEFT JOIN tags t ON pt.tags_id = t.id " +
+                    "LEFT JOIN post_tags pt ON p.post_id = pt.post_id " +
+                    "LEFT JOIN tags t ON pt.tag_id = t.id " +
                     "WHERE (:authorCount = 0 OR u.name IN (:authors)) " +
                     "AND (:tagCount = 0 OR t.name IN (:tags)) " +
                     "AND (:dateCount = 0 OR p.published_at IN (:publishedDates)) " +
                     "ORDER BY p.published_at DESC",
             countQuery = "SELECT COUNT(DISTINCT p.post_id) FROM posts p " +
                     "LEFT JOIN users u ON p.author_id = u.id " +
-                    "LEFT JOIN posts_tags pt ON p.post_id = pt.posts_post_id " +
-                    "LEFT JOIN tags t ON pt.tags_id = t.id " +
+                    "LEFT JOIN post_tags pt ON p.post_id = pt.post_id " +
+                    "LEFT JOIN tags t ON pt.tag_id = t.id " +
                     "WHERE (:authorCount = 0 OR u.name IN (:authors)) " +
                     "AND (:tagCount = 0 OR t.name IN (:tags)) " +
                     "AND (:dateCount = 0 OR p.published_at IN (:publishedDates))",

@@ -1,85 +1,5 @@
 
 
-
-<!--<!DOCTYPE html>-->
-<!--<html xmlns:th="http://www.thymeleaf.org">-->
-<!--<head>-->
-<!--    <meta charset="UTF-8" />-->
-<!--    <title>View Post</title>-->
-<!--    <link rel="stylesheet" th:href="@{/css/viewpoststyle.css}" />-->
-<!--</head>-->
-<!--<body>-->
-<!--<div class="container">-->
-
-<!--    <div class="top-buttons">-->
-<!--        <form th:action="@{/update-post/{postId}(postId=${post.postId})}" method="post" class="button-form"-->
-<!--              style="text-align: right">-->
-<!--            <input type="submit" value="Edit Post" />-->
-<!--        </form>-->
-<!--        <form th:action="@{/delete-post/{postId}(postId=${post.postId})}" method="post" class="button-form"-->
-<!--              onsubmit="return confirm('Are you sure you want to delete this post?');" style="text-align: right">-->
-<!--            <input type="submit" value="Delete Post" />-->
-<!--        </form>-->
-<!--    </div>-->
-
-<!--    <h1 class="post-title" th:text="${post.title}">Post Title</h1>-->
-
-<!--    <div class="post-meta-center">-->
-<!--        <span class="post-author" th:text="${post.author}"></span>-->
-<!--        <span class="published-date" th:text="${post.publishedDate}"></span>-->
-<!--    </div>-->
-
-<!--    <h3 class="post-excerpt" th:text="${post.excerpt}">Post Excerpt</h3>-->
-<!--    <div class="post-content" th:text="${post.content}">Post Content</div>-->
-
-<!--    <div class="tags">-->
-<!--        <span th:each="tag : ${post.tags}" th:text="${tag.name}" class="tag"></span>-->
-<!--    </div>-->
-
-
-<!--    <div class="comments">-->
-<!--        <h3>Comments</h3>-->
-<!--        <form th:action="@{/add-comment/{postId}(postId=${post.postId})}" method="post">-->
-<!--            <input type="text" placeholder="Name" name="name" required />-->
-<!--            <input type="email" placeholder="Email" name="email" required />-->
-<!--            <input type="text" placeholder="Add a comment..." name="content" required />-->
-<!--            <input type="submit" value="Add Comment" />-->
-<!--        </form>-->
-
-
-<!--        <div th:each="c : ${post.comments}" class="comment">-->
-<!--            <div class="comment-name" th:text="${c.name}">Commenter Name</div>-->
-
-<!--            <div th:if="${editCommentId == null or editCommentId != c.id}">-->
-<!--                <p th:text="${c.comment}">Comment text here</p>-->
-
-<!--                <form th:action="@{/view-post/{postId}(postId=${post.postId})}" method="get" style="display:inline;">-->
-<!--                    <input type="hidden" name="editCommentId" th:value="${c.id}" />-->
-<!--                    <button type="submit">Edit</button>-->
-<!--                </form>-->
-
-<!--                <form th:action="@{/delete-comment/{commentId}(commentId=${c.id})}" method="post" style="display:inline;">-->
-<!--                    <input type="hidden" name="postId" th:value="${post.postId}" />-->
-<!--                    <button type="submit" onclick="return confirm('Are you sure you want to delete this comment?');">Delete</button>-->
-<!--                </form>-->
-<!--            </div>-->
-
-<!--            <div th:if="${editCommentId == c.id}">-->
-<!--                <form th:action="@{/process-edit-comment}" method="post">-->
-<!--                    <input type="hidden" name="id" th:value="${c.id}" />-->
-<!--                    <input type="hidden" name="postId" th:value="${post.postId}" />-->
-<!--                    <textarea name="comment" rows="3" th:text="${c.comment}"></textarea>-->
-<!--                    <button type="submit">Save</button>-->
-<!--                    <a th:href="@{/view-post/{postId}(postId=${post.postId})}" style="display: inline">Cancel</a>-->
-<!--                </form>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-
-<!--</div>-->
-<!--</body>-->
-<!--</html>-->
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
@@ -91,62 +11,62 @@
 <body>
 <div class="container">
 
-    <!-- ====== Edit / Delete Post Buttons (Only for author/admin) ====== -->
-    <div class="top-buttons" sec:authorize="isAuthenticated()">
-        <form th:if="${#authentication.name == post.author or #authorization.expression('hasRole(''ROLE_ADMIN'')')}"
-              th:action="@{/update-post/{postId}(postId=${post.postId})}" method="post" class="button-form">
+    <div class="top-buttons">
+        <form th:if="${#authentication.authenticated and post.authorUser != null
+         and (#authentication.name == post.authorUser.email or
+          #authorization.expression('hasRole(''ROLE_ADMIN'')'))}"
+              th:action="@{/update-post/{postId}(postId=${post.postId})}"
+              method="post" class="button-form">
             <input type="submit" value="Edit Post" />
         </form>
 
-        <form th:if="${#authentication.name == post.author or #authorization.expression('hasRole(''ROLE_ADMIN'')')}"
-              th:action="@{/delete-post/{postId}(postId=${post.postId})}" method="post" class="button-form"
+        <form th:if="${#authentication.authenticated and post.authorUser != null and
+         (#authentication.name == post.authorUser.email or
+          #authorization.expression('hasRole(''ROLE_ADMIN'')'))}"
+              th:action="@{/delete-post/{postId}(postId=${post.postId})}"
+              method="post" class="button-form"
               onsubmit="return confirm('Are you sure you want to delete this post?');">
             <input type="submit" value="Delete Post" />
         </form>
+
     </div>
 
-    <!-- ====== Post Content ====== -->
     <h1 class="post-title" th:text="${post.title}">Post Title</h1>
     <div class="post-meta-center">
-        <span class="post-author" th:text="${post.author}">Author Name</span>
-        <span class="published-date" th:text="${post.publishedDate}">2025-10-15</span>
+        <span class="post-author" th:text="${post.authorUser != null ?
+         post.authorUser.name : 'Unknown Author'}">Author Name</span>
+        <span class="published-date" th:text="${post.publishedDate}"></span>
     </div>
     <h3 class="post-excerpt" th:text="${post.excerpt}">Post Excerpt</h3>
     <div class="post-content" th:text="${post.content}">Post Content</div>
 
-    <!-- ====== Post Tags ====== -->
     <div class="tags">
         <span th:each="tag : ${post.tags}" th:text="${tag.name}" class="tag"></span>
     </div>
 
-    <!-- ====== Comments Section ====== -->
     <div class="comments">
         <h3>Comments</h3>
 
-        <!-- Add Comment Form (Only for logged-in users) -->
-        <div sec:authorize="isAuthenticated()">
-            <form th:action="@{/add-comment/{postId}(postId=${post.postId})}" method="post">
-                <input type="text" placeholder="Add a comment..." name="content" required />
-                <input type="submit" value="Add Comment" />
-            </form>
-        </div>
+        <form th:action="@{/add-comment/{postId}(postId=${post.postId})}" method="post">
+            <input type="text" placeholder="Name" name="name" required />
+            <input type="email" placeholder="Email" name="email" required />
+            <textarea placeholder="Add a comment..." name="content" required></textarea>
+            <input type="submit" value="Add Comment" />
+        </form>
 
-        <!-- Message for not logged-in users -->
-        <div sec:authorize="!isAuthenticated()">
-            <p>You must <a th:href="@{/showLoginPage}">login</a> to comment.</p>
-        </div>
+<!--        <div sec:authorize="!isAuthenticated()">-->
+<!--            <p>You must <a th:href="@{/showLoginPage}">login</a> to comment.</p>-->
+<!--        </div>-->
 
-        <!-- Display comments -->
         <div th:each="c : ${post.comments}" class="comment">
             <div class="comment-name" th:text="${c.name}">Commenter Name</div>
 
-            <!-- Show comment or edit form -->
             <div th:if="${editCommentId == null or editCommentId != c.id}">
                 <p th:text="${c.comment}">Comment text here</p>
 
-                <!-- Edit/Delete buttons only for comment author or admin -->
                 <div sec:authorize="isAuthenticated()"
-                     th:if="${#authentication.name == c.email or #authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+                     th:if="${#authentication.name == c.email or
+                     #authorization.expression('hasRole(''ROLE_ADMIN'')')}">
                     <form th:action="@{/view-post/{postId}(postId=${post.postId})}" method="get" style="display:inline;">
                         <input type="hidden" name="editCommentId" th:value="${c.id}" />
                         <button type="submit">Edit</button>
@@ -154,19 +74,20 @@
 
                     <form th:action="@{/delete-comment/{commentId}(commentId=${c.id})}" method="post" style="display:inline;">
                         <input type="hidden" name="postId" th:value="${post.postId}" />
-                        <button type="submit" onclick="return confirm('Are you sure you want to delete this comment?');">Delete</button>
+                        <button type="submit" onclick="return confirm('Are you sure you want to delete this comment?');">
+                            Delete</button>
                     </form>
                 </div>
             </div>
 
-            <!-- Edit comment form -->
             <div th:if="${editCommentId == c.id}">
                 <form th:action="@{/process-edit-comment}" method="post">
                     <input type="hidden" name="id" th:value="${c.id}" />
                     <input type="hidden" name="postId" th:value="${post.postId}" />
                     <textarea name="comment" rows="3" th:text="${c.comment}"></textarea>
                     <button type="submit">Save</button>
-                    <a th:href="@{/view-post/{postId}(postId=${post.postId})}" style="display: inline">Cancel</a>
+                    <a th:href="@{/view-post/{postId}(postId=${post.postId})}"
+                       style="display: inline">Cancel</a>
                 </form>
             </div>
         </div>

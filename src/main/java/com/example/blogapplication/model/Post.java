@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -16,19 +17,17 @@ public class Post extends BaseModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "post_id")
     private Integer postId;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "title", columnDefinition = "TEXT")
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "excerpt", columnDefinition = "TEXT")
     private String excerpt;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
-
-    @Column(columnDefinition = "TEXT")
-    private String author;
 
     @Column(name = "published_at")
     @CreationTimestamp
@@ -37,8 +36,14 @@ public class Post extends BaseModel {
     @Column(name = "is_published")
     private Boolean isPublished;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    private Set<Tag> tags;
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "post_tags",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+//    @JsonIgnore
+    private Set<Tag> tags = new HashSet<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<Comment> comments;
@@ -49,5 +54,4 @@ public class Post extends BaseModel {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id")
     private User authorUser;
-
 }
