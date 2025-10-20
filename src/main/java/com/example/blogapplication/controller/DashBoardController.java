@@ -73,7 +73,7 @@ public class DashBoardController {
         return "redirect:/homepage";
     }
 
-    @GetMapping("/homepage")
+    @GetMapping("{"/",/homepage"})
     public String getPosts(@RequestParam(defaultValue = "0") int page,
                            @RequestParam(defaultValue = "10") int size,
                            Model model) {
